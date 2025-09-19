@@ -7,10 +7,18 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.use(cors({
+  origin: [
+    "http://localhost:3000",                       // local React dev server
+    "https://contactsmanagerapp.netlify.app"      
+  ],
+  methods: ["GET", "POST", "DELETE"],
+  credentials: true
+}));
 
-app.use(cors());
 app.use(express.json());
 
+// ------------------ Validation ------------------
 const validateContact = (contact) => {
   const errors = {};
   
@@ -32,15 +40,18 @@ const validateContact = (contact) => {
   };
 };
 
+// ------------------ Routes ------------------
+app.get('/', (req, res) => {
+  res.json({ message: "Welcome to Contact Book API" });
+});
+
 app.get('/contacts', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     
     if (page < 1 || limit < 1 || limit > 100) {
-      return res.status(400).json({
-        error: 'Invalid pagination parameters'
-      });
+      return res.status(400).json({ error: 'Invalid pagination parameters' });
     }
     
     const result = await getContacts(page, limit);
@@ -64,7 +75,6 @@ app.post('/contacts', async (req, res) => {
       });
     }
     
-    // Trim whitespace
     const contact = {
       name: name.trim(),
       email: email.trim(),
@@ -108,6 +118,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// ------------------ Error Handling ------------------
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
@@ -117,6 +128,7 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// ------------------ Start Server ------------------
 const startServer = async () => {
   try {
     await initializeDb();
