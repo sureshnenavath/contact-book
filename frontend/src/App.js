@@ -5,7 +5,7 @@ import Pagination from './components/Pagination';
 import DarkModeToggle from './components/DarkModeToggle';
 import './App.css';
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 function App() {
   const [contacts, setContacts] = useState([]);
